@@ -31,7 +31,7 @@
 
 **Parallel Tasks (Can be done simultaneously after 1.3):**
 
-- [ ] 1.4a. Implement core grayscale conversion (2 hours)
+- [x] 1.4a. Implement core grayscale conversion (2 hours)
 
   - Apply CSS filters for grayscale transformation using device profiles
   - Create toggle functionality to enable/disable grayscale mode

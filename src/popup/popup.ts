@@ -5,7 +5,7 @@ console.log('E-ink Developer Extension popup loaded');
 
 interface EinkSettings {
   enabled: boolean;
-  deviceProfile: string;
+  deviceProfile: 'kindle' | 'kobo' | 'remarkable';
   grayscaleEnabled: boolean;
   frameRateLimit: number;
   scrollFlashEnabled: boolean;
@@ -85,7 +85,10 @@ class PopupController {
     }
 
     if (statusText) {
-      statusText.textContent = this.settings.enabled ? 'Active' : 'Inactive';
+      const statusMessage = this.settings.enabled
+        ? `Active (${this.settings.deviceProfile.charAt(0).toUpperCase() + this.settings.deviceProfile.slice(1)})`
+        : 'Inactive';
+      statusText.textContent = statusMessage;
       statusText.className = this.settings.enabled
         ? 'status-active'
         : 'status-inactive';
@@ -93,6 +96,13 @@ class PopupController {
 
     if (deviceSelect) {
       deviceSelect.value = this.settings.deviceProfile;
+    }
+
+    // Apply grayscale to popup itself when active (for visual feedback)
+    if (this.settings.enabled && this.settings.grayscaleEnabled) {
+      document.body.style.filter = 'grayscale(1)';
+    } else {
+      document.body.style.filter = 'none';
     }
   }
 
@@ -119,8 +129,15 @@ class PopupController {
   private async updateDeviceProfile(profile: string): Promise<void> {
     if (!this.settings) return;
 
-    this.settings.deviceProfile = profile;
-    await this.saveSettings();
+    // Validate the profile is one of the expected values
+    if (
+      profile === 'kindle' ||
+      profile === 'kobo' ||
+      profile === 'remarkable'
+    ) {
+      this.settings.deviceProfile = profile;
+      await this.saveSettings();
+    }
   }
 
   private async saveSettings(): Promise<void> {

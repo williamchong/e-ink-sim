@@ -42,6 +42,23 @@ class EinkSimulator {
           this.applySimulation();
         }
         sendResponse({ success: true });
+      } else if (request.action === 'settingsChanged') {
+        // Handle settings changes from service worker
+        this.settings = request.data;
+        this.applySimulation();
+        sendResponse({ success: true });
+      } else if (request.action === 'simulationToggled') {
+        // Handle toggle from service worker
+        if (this.settings) {
+          this.settings.enabled = request.data.enabled;
+          this.applySimulation();
+        }
+        sendResponse({ success: true });
+      } else if (request.action === 'initializeSimulation') {
+        // Handle initialization from service worker
+        this.settings = request.data;
+        this.applySimulation();
+        sendResponse({ success: true });
       }
     });
 
@@ -94,6 +111,7 @@ class EinkSimulator {
 
     let css = '';
 
+    // Apply grayscale conversion if enabled
     if (this.settings?.grayscaleEnabled && this.settings?.deviceProfile) {
       // Get device-specific grayscale filter
       const deviceProfile = DEVICE_PROFILES[this.settings.deviceProfile];
@@ -101,8 +119,29 @@ class EinkSimulator {
         deviceProfile?.grayscaleFilter || 'grayscale(1) contrast(1.2)';
 
       css += `
+        /* Apply grayscale filter to entire page for e-ink simulation */
         html {
           filter: ${grayscaleFilter} !important;
+          -webkit-filter: ${grayscaleFilter} !important;
+        }
+
+        /* Ensure all content inherits the grayscale transformation */
+        body {
+          filter: inherit !important;
+          -webkit-filter: inherit !important;
+        }
+
+        /* Handle specific elements that might override filters */
+        img, video, canvas, svg {
+          filter: inherit !important;
+          -webkit-filter: inherit !important;
+        }
+
+        /* Optimize text rendering for e-ink displays */
+        * {
+          text-rendering: optimizeLegibility !important;
+          -webkit-font-smoothing: antialiased !important;
+          -moz-osx-font-smoothing: grayscale !important;
         }
       `;
     }
@@ -113,7 +152,7 @@ class EinkSimulator {
       * {
         /* Disable smooth scrolling for e-ink */
         scroll-behavior: auto !important;
-        
+
         /* Optimize rendering for e-ink */
         backface-visibility: hidden !important;
         transform: translateZ(0) !important;
@@ -129,10 +168,33 @@ class EinkSimulator {
       *:hover {
         transition: none !important;
       }
+
+      /* Improve contrast for better e-ink readability */
+      body {
+        background-color: white !important;
+        color: black !important;
+      }
+
+      /* Ensure links are visible in grayscale */
+      a {
+        text-decoration: underline !important;
+        font-weight: bold !important;
+      }
+
+      /* Optimize button visibility */
+      button, input[type="button"], input[type="submit"] {
+        border: 2px solid black !important;
+        background: white !important;
+        color: black !important;
+      }
     `;
 
     this.styleElement.textContent = css;
     document.head.appendChild(this.styleElement);
+
+    console.log(
+      `[E-ink Extension] CSS injected - Grayscale: ${this.settings?.grayscaleEnabled}, Device: ${this.settings?.deviceProfile}`
+    );
   }
 
   private removeCSS(): void {
@@ -211,6 +273,44 @@ class EinkSimulator {
    */
   public testAPIOverrides(): boolean {
     return this.isAPIOverrideActive;
+  }
+
+  /**
+   * Test method to verify grayscale conversion is working
+   * Can be called from browser console for debugging
+   */
+  public testGrayscaleConversion(): {
+    enabled: boolean;
+    deviceProfile: string;
+    filterApplied: boolean;
+    cssInjected: boolean;
+  } {
+    const styleElement = document.getElementById(
+      'eink-developer-extension-styles'
+    );
+    const htmlElement = document.documentElement;
+    const computedStyle = window.getComputedStyle(htmlElement);
+
+    return {
+      enabled: this.settings?.enabled || false,
+      deviceProfile: this.settings?.deviceProfile || 'none',
+      filterApplied: computedStyle.filter !== 'none',
+      cssInjected: styleElement !== null,
+    };
+  }
+
+  /**
+   * Toggle grayscale mode for testing
+   * Can be called from browser console for debugging
+   */
+  public toggleGrayscale(): void {
+    if (this.settings) {
+      this.settings.grayscaleEnabled = !this.settings.grayscaleEnabled;
+      this.applySimulation();
+      console.log(
+        `[E-ink Extension] Grayscale toggled: ${this.settings.grayscaleEnabled}`
+      );
+    }
   }
 }
 

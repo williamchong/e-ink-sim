@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-ink Extension Test Suite</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #007acc;
+        }
+        .test-link {
+            display: inline-block;
+            background: #007acc;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 5px 10px 5px 0;
+        }
+        .test-link:hover {
+            background: #005a9e;
+        }
+        .script-box {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .completed { background: #4CAF50; color: white; }
+        .in-progress { background: #FF9800; color: white; }
+        .not-started { background: #9E9E9E; color: white; }
+    </style>
+</head>
+<body>
+    <h1>E-ink Developer Extension Test Suite</h1>
+    
+    <div class="test-section">
+        <h2>Task 1.4a: Core Grayscale Conversion <span class="status completed">COMPLETED</span></h2>
+        <p>Test the core grayscale conversion functionality with device profiles and toggle controls.</p>
+        
+        <h3>Manual Tests</h3>
+        <a href="manual/test-page.html" class="test-link" target="_blank">Open Test Page</a>
+        
+        <h3>Website Tests</h3>
+        <a href="https://github.com" class="test-link" target="_blank">Test on GitHub</a>
+        <a href="https://medium.com" class="test-link" target="_blank">Test on Medium</a>
+        <a href="https://en.wikipedia.org" class="test-link" target="_blank">Test on Wikipedia</a>
+        
+        <h3>Console Scripts</h3>
+        <p>Copy and paste these scripts into the browser console on any test page:</p>
+        
+        <h4>Grayscale Test Script</h4>
+        <div class="script-box">
+// Copy contents of scripts/test-grayscale.js
+// Then run: testGrayscaleConversion()
+        </div>
+        
+        <h4>Task Verification Script</h4>
+        <div class="script-box">
+// Copy contents of scripts/verify-task-1.4a.js  
+// Then run: verifyTask1_4a()
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Future Tasks <span class="status not-started">PENDING</span></h2>
+        <p>Additional tests will be added as more tasks are completed.</p>
+        
+        <h3>Upcoming Tests</h3>
+        <ul>
+            <li>Task 1.4b: requestAnimationFrame override testing</li>
+            <li>Task 2.1a: Popup interface testing</li>
+            <li>Task 2.1b: Options page testing</li>
+            <li>Scroll flash effect testing</li>
+            <li>Performance metrics testing</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>Quick Extension Test</h2>
+        <p>Use this section to quickly verify the extension is working:</p>
+        
+        <div style="display: flex; gap: 20px; margin: 20px 0;">
+            <div style="background: #ff0000; color: white; padding: 15px; border-radius: 4px;">Red Box</div>
+            <div style="background: #00ff00; color: black; padding: 15px; border-radius: 4px;">Green Box</div>
+            <div style="background: #0000ff; color: white; padding: 15px; border-radius: 4px;">Blue Box</div>
+        </div>
+        
+        <p><strong>Test:</strong> Enable the E-ink extension and verify the colored boxes above become grayscale.</p>
+        
+        <button onclick="testExtension()" style="background: #007acc; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+            Test Extension
+        </button>
+        
+        <div id="test-results" style="margin-top: 20px;"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Documentation</h2>
+        <a href="docs/test-websites.md" class="test-link">Website Testing Guide</a>
+        <a href="README.md" class="test-link">Test Suite README</a>
+    </div>
+
+    <script>
+        function testExtension() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = '<p>Testing extension...</p>';
+            
+            setTimeout(() => {
+                if (typeof window.einkSimulator !== 'undefined') {
+                    const test = window.einkSimulator.testGrayscaleConversion();
+                    results.innerHTML = `
+                        <h4>Extension Test Results:</h4>
+                        <p>✅ Extension loaded: Yes</p>
+                        <p>Simulation enabled: ${test.enabled ? '✅ Yes' : '❌ No'}</p>
+                        <p>Device profile: ${test.deviceProfile}</p>
+                        <p>Filter applied: ${test.filterApplied ? '✅ Yes' : '❌ No'}</p>
+                        <p>CSS injected: ${test.cssInjected ? '✅ Yes' : '❌ No'}</p>
+                    `;
+                } else {
+                    results.innerHTML = `
+                        <h4>Extension Test Results:</h4>
+                        <p>❌ Extension not detected</p>
+                        <p>Make sure the extension is loaded and enabled in Chrome.</p>
+                    `;
+                }
+            }, 1000);
+        }
+        
+        // Auto-test on page load
+        window.addEventListener('load', () => {
+            setTimeout(testExtension, 2000);
+        });
+    </script>
+</body>
+</html>

@@ -114,6 +114,35 @@ The E-ink Developer Extension helps web developers create e-ink-friendly web exp
 - **Video Playback**: Reduces video frame rates and applies grayscale filters
 - **Scroll Physics**: Modifies scroll behavior to match e-ink refresh limitations
 
+## Testing
+
+The extension includes a comprehensive test suite to verify functionality across different scenarios.
+
+### Quick Test
+
+1. Open `tests/index.html` in Chrome
+2. Load the extension in developer mode
+3. Follow the on-screen test instructions
+
+### Manual Testing
+
+- **Local Tests**: Use `tests/manual/test-page.html` for basic functionality verification
+- **Website Tests**: Test on GitHub, Medium, and Wikipedia using guides in `tests/docs/`
+- **Console Tests**: Run verification scripts from `tests/scripts/` in browser console
+
+### Test Structure
+
+```
+tests/
+├── index.html              # Test suite homepage
+├── manual/                 # Manual testing resources
+├── scripts/                # Console testing scripts  
+├── docs/                   # Testing documentation
+└── README.md              # Detailed testing guide
+```
+
+For detailed testing instructions, see [tests/README.md](tests/README.md).
+
 ## Development Phases
 
 ### Phase 1: Hackathon MVP ✅
