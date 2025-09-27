@@ -40,8 +40,12 @@ class PopupController {
   }
 
   private setupEventListeners(): void {
-    const toggleButton = document.getElementById('toggleSimulation') as HTMLButtonElement;
-    const deviceSelect = document.getElementById('deviceProfile') as HTMLSelectElement;
+    const toggleButton = document.getElementById(
+      'toggleSimulation'
+    ) as HTMLButtonElement;
+    const deviceSelect = document.getElementById(
+      'deviceProfile'
+    ) as HTMLSelectElement;
 
     if (toggleButton) {
       toggleButton.addEventListener('click', () => {
@@ -60,18 +64,28 @@ class PopupController {
   private updateUI(): void {
     if (!this.settings) return;
 
-    const toggleButton = document.getElementById('toggleSimulation') as HTMLButtonElement;
+    const toggleButton = document.getElementById(
+      'toggleSimulation'
+    ) as HTMLButtonElement;
     const statusText = document.getElementById('status') as HTMLSpanElement;
-    const deviceSelect = document.getElementById('deviceProfile') as HTMLSelectElement;
+    const deviceSelect = document.getElementById(
+      'deviceProfile'
+    ) as HTMLSelectElement;
 
     if (toggleButton) {
-      toggleButton.textContent = this.settings.enabled ? 'Disable Simulation' : 'Enable Simulation';
-      toggleButton.className = this.settings.enabled ? 'button button-danger' : 'button button-primary';
+      toggleButton.textContent = this.settings.enabled
+        ? 'Disable Simulation'
+        : 'Enable Simulation';
+      toggleButton.className = this.settings.enabled
+        ? 'button button-danger'
+        : 'button button-primary';
     }
 
     if (statusText) {
       statusText.textContent = this.settings.enabled ? 'Active' : 'Inactive';
-      statusText.className = this.settings.enabled ? 'status-active' : 'status-inactive';
+      statusText.className = this.settings.enabled
+        ? 'status-active'
+        : 'status-inactive';
     }
 
     if (deviceSelect) {
@@ -87,7 +101,10 @@ class PopupController {
     this.updateUI();
 
     // Notify content script
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const [tab] = await chrome.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
     if (tab.id) {
       chrome.tabs.sendMessage(tab.id, { action: 'toggleSimulation' });
     }

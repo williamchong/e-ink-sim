@@ -40,8 +40,12 @@ class OptionsController {
   }
 
   private setupEventListeners(): void {
-    const saveButton = document.getElementById('saveSettings') as HTMLButtonElement;
-    const resetButton = document.getElementById('resetSettings') as HTMLButtonElement;
+    const saveButton = document.getElementById(
+      'saveSettings'
+    ) as HTMLButtonElement;
+    const resetButton = document.getElementById(
+      'resetSettings'
+    ) as HTMLButtonElement;
 
     if (saveButton) {
       saveButton.addEventListener('click', () => {
@@ -59,25 +63,43 @@ class OptionsController {
   private updateUI(): void {
     if (!this.settings) return;
 
-    const deviceSelect = document.getElementById('deviceProfile') as HTMLSelectElement;
-    const grayscaleCheck = document.getElementById('grayscaleEnabled') as HTMLInputElement;
-    const frameRateInput = document.getElementById('frameRateLimit') as HTMLInputElement;
-    const scrollFlashCheck = document.getElementById('scrollFlashEnabled') as HTMLInputElement;
+    const deviceSelect = document.getElementById(
+      'deviceProfile'
+    ) as HTMLSelectElement;
+    const grayscaleCheck = document.getElementById(
+      'grayscaleEnabled'
+    ) as HTMLInputElement;
+    const frameRateInput = document.getElementById(
+      'frameRateLimit'
+    ) as HTMLInputElement;
+    const scrollFlashCheck = document.getElementById(
+      'scrollFlashEnabled'
+    ) as HTMLInputElement;
 
     if (deviceSelect) deviceSelect.value = this.settings.deviceProfile;
     if (grayscaleCheck) grayscaleCheck.checked = this.settings.grayscaleEnabled;
-    if (frameRateInput) frameRateInput.value = this.settings.frameRateLimit.toString();
-    if (scrollFlashCheck) scrollFlashCheck.checked = this.settings.scrollFlashEnabled;
+    if (frameRateInput)
+      frameRateInput.value = this.settings.frameRateLimit.toString();
+    if (scrollFlashCheck)
+      scrollFlashCheck.checked = this.settings.scrollFlashEnabled;
   }
 
   private async saveSettings(): Promise<void> {
-    if (!this.settings) return Promise.resolve()
+    if (!this.settings) return Promise.resolve();
 
     // Read values from form
-    const deviceSelect = document.getElementById('deviceProfile') as HTMLSelectElement;
-    const grayscaleCheck = document.getElementById('grayscaleEnabled') as HTMLInputElement;
-    const frameRateInput = document.getElementById('frameRateLimit') as HTMLInputElement;
-    const scrollFlashCheck = document.getElementById('scrollFlashEnabled') as HTMLInputElement;
+    const deviceSelect = document.getElementById(
+      'deviceProfile'
+    ) as HTMLSelectElement;
+    const grayscaleCheck = document.getElementById(
+      'grayscaleEnabled'
+    ) as HTMLInputElement;
+    const frameRateInput = document.getElementById(
+      'frameRateLimit'
+    ) as HTMLInputElement;
+    const scrollFlashCheck = document.getElementById(
+      'scrollFlashEnabled'
+    ) as HTMLInputElement;
 
     this.settings.deviceProfile = deviceSelect?.value || 'kindle';
     this.settings.grayscaleEnabled = grayscaleCheck?.checked || true;
