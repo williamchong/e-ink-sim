@@ -36,7 +36,25 @@ jobs:
     - name: Build extension
       run: npm run build
 
-    - name: Upload build artifacts
+    - name: Create extension package
+      if: matrix.node-version == '20.x'
+      run: |
+        cd dist
+        zip -r ../extension-package.zip .
+        cd ..
+        echo "📦 Extension package created: extension-package.zip"
+        echo "Package contents:"
+        unzip -l extension-package.zip
+
+    - name: Upload extension package
+      uses: actions/upload-artifact@v4
+      if: matrix.node-version == '20.x'
+      with:
+        name: extension-package
+        path: extension-package.zip
+        retention-days: 30
+
+    - name: Upload build artifacts (unzipped)
       uses: actions/upload-artifact@v4
       if: matrix.node-version == '20.x'
       with:
