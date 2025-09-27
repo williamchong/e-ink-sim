@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>E-ink Developer Extension</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <header class="popup-header">
+      <h1>E-ink Developer</h1>
+      <span id="status" class="status-inactive">Inactive</span>
+    </header>
+
+    <main class="popup-main">
+      <div class="control-group">
+        <label for="deviceProfile">Device Profile:</label>
+        <select id="deviceProfile" class="select">
+          <option value="kindle">Kindle Paperwhite</option>
+          <option value="kobo">Kobo Clara HD</option>
+          <option value="remarkable">reMarkable 2</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <button id="toggleSimulation" class="button button-primary">
+          Enable Simulation
+        </button>
+      </div>
+    </main>
+
+    <footer class="popup-footer">
+      <a href="../options/options.html" target="_blank" class="options-link">
+        Advanced Settings
+      </a>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

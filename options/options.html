@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>E-ink Developer Extension - Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="options-container">
+    <header class="options-header">
+      <h1>E-ink Developer Extension Settings</h1>
+      <p>Configure e-ink simulation parameters for web development testing</p>
+    </header>
+
+    <main class="options-main">
+      <section class="settings-section">
+        <h2>Device Configuration</h2>
+
+        <div class="form-group">
+          <label for="deviceProfile">Device Profile:</label>
+          <select id="deviceProfile" class="form-control">
+            <option value="kindle">Kindle Paperwhite (5 FPS, High Contrast)</option>
+            <option value="kobo">Kobo Clara HD (4 FPS, Medium Contrast)</option>
+            <option value="remarkable">reMarkable 2 (8 FPS, Sharp Contrast)</option>
+          </select>
+          <small class="help-text">Choose a device profile that matches your target e-ink hardware</small>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <h2>Visual Effects</h2>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="grayscaleEnabled" checked>
+            <span class="checkmark"></span>
+            Enable Grayscale Conversion
+          </label>
+          <small class="help-text">Convert all colors to grayscale to simulate e-ink displays</small>
+        </div>
+
+        <div class="form-group">
+          <label for="frameRateLimit">Frame Rate Limit (FPS):</label>
+          <input type="range" id="frameRateLimit" min="1" max="30" value="5" class="slider">
+          <div class="slider-value">5 FPS</div>
+          <small class="help-text">Limit animation frame rate to simulate e-ink refresh constraints</small>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="scrollFlashEnabled" checked>
+            <span class="checkmark"></span>
+            Enable Scroll Flash Effect
+          </label>
+          <small class="help-text">Simulate the white flash that occurs during e-ink screen refreshes</small>
+        </div>
+      </section>
+
+      <div class="actions">
+        <button id="saveSettings" class="button button-primary">Save Settings</button>
+        <button id="resetSettings" class="button button-secondary">Reset to Defaults</button>
+      </div>
+
+      <div id="saveMessage" class="save-message" style="display: none;">
+        Settings saved successfully!
+      </div>
+    </main>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

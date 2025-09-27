@@ -1,0 +1,36 @@
+{
+  "name": "eink-developer-extension",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Chrome extension for web developers to test and optimize applications for e-ink devices",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "preview": "vite preview",
+    "clean": "rm -rf dist",
+    "lint": "eslint src --ext .ts,.tsx",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.246",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@vitejs/plugin-legacy": "^5.0.0",
+    "eslint": "^8.57.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-airbnb-typescript": "^17.1.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-import": "^2.29.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.1.6",
+    "vite": "^5.0.0"
+  },
+  "keywords": [
+    "chrome-extension",
+    "e-ink",
+    "developer-tools",
+    "web-development"
+  ],
+  "author": "Developer",
+  "license": "MIT"
+}
