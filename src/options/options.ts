@@ -41,6 +41,9 @@ class OptionsController {
     const resetButton = document.getElementById(
       'resetSettings'
     ) as HTMLButtonElement;
+    const frameRateInput = document.getElementById(
+      'frameRateLimit'
+    ) as HTMLInputElement;
 
     if (saveButton) {
       saveButton.addEventListener('click', () => {
@@ -53,6 +56,35 @@ class OptionsController {
         this.resetToDefaults();
       });
     }
+
+    // Update frame rate display dynamically
+    if (frameRateInput) {
+      frameRateInput.addEventListener('input', (e) => {
+        const target = e.target as HTMLInputElement;
+        const { value } = target;
+        const display = document.querySelector('.slider-value');
+        if (display) {
+          display.textContent = `${value} FPS`;
+        }
+      });
+    }
+
+    // Auto-save on change for better UX
+    const inputs = [
+      'deviceProfile',
+      'grayscaleEnabled',
+      'frameRateLimit',
+      'scrollFlashEnabled',
+    ];
+
+    inputs.forEach((id) => {
+      const element = document.getElementById(id);
+      if (element) {
+        element.addEventListener('change', () => {
+          this.saveSettings();
+        });
+      }
+    });
   }
 
   private updateUI(): void {
@@ -73,8 +105,14 @@ class OptionsController {
 
     if (deviceSelect) deviceSelect.value = this.settings.deviceProfile;
     if (grayscaleCheck) grayscaleCheck.checked = this.settings.grayscaleEnabled;
-    if (frameRateInput)
+    if (frameRateInput) {
       frameRateInput.value = this.settings.frameRateLimit.toString();
+      // Update the display value
+      const display = document.querySelector('.slider-value');
+      if (display) {
+        display.textContent = `${this.settings.frameRateLimit} FPS`;
+      }
+    }
     if (scrollFlashCheck)
       scrollFlashCheck.checked = this.settings.scrollFlashEnabled;
   }
@@ -82,32 +120,54 @@ class OptionsController {
   private async saveSettings(): Promise<void> {
     if (!this.settings) return Promise.resolve();
 
-    // Read values from form
-    const deviceSelect = document.getElementById(
-      'deviceProfile'
-    ) as HTMLSelectElement;
-    const grayscaleCheck = document.getElementById(
-      'grayscaleEnabled'
-    ) as HTMLInputElement;
-    const frameRateInput = document.getElementById(
-      'frameRateLimit'
-    ) as HTMLInputElement;
-    const scrollFlashCheck = document.getElementById(
-      'scrollFlashEnabled'
-    ) as HTMLInputElement;
+    try {
+      // Read values from form
+      const deviceSelect = document.getElementById(
+        'deviceProfile'
+      ) as HTMLSelectElement;
+      const grayscaleCheck = document.getElementById(
+        'grayscaleEnabled'
+      ) as HTMLInputElement;
+      const frameRateInput = document.getElementById(
+        'frameRateLimit'
+      ) as HTMLInputElement;
+      const scrollFlashCheck = document.getElementById(
+        'scrollFlashEnabled'
+      ) as HTMLInputElement;
 
-    this.settings.deviceProfile =
-      (deviceSelect?.value as 'kindle' | 'kobo' | 'remarkable') || 'kindle';
-    this.settings.grayscaleEnabled = grayscaleCheck?.checked || true;
-    this.settings.frameRateLimit = parseInt(frameRateInput?.value || '5', 10);
-    this.settings.scrollFlashEnabled = scrollFlashCheck?.checked || true;
+      // Validate and update settings
+      const deviceProfile = deviceSelect?.value as
+        | 'kindle'
+        | 'kobo'
+        | 'remarkable';
+      if (['kindle', 'kobo', 'remarkable'].includes(deviceProfile)) {
+        this.settings.deviceProfile = deviceProfile;
+      }
 
-    return new Promise((resolve) => {
-      chrome.storage.sync.set({ einkSettings: this.settings }, () => {
-        this.showSaveMessage();
-        resolve();
+      this.settings.grayscaleEnabled = grayscaleCheck?.checked ?? true;
+
+      const frameRate = parseInt(frameRateInput?.value || '5', 10);
+      this.settings.frameRateLimit = Math.max(1, Math.min(30, frameRate)); // Clamp between 1-30
+
+      this.settings.scrollFlashEnabled = scrollFlashCheck?.checked ?? true;
+
+      return await new Promise((resolve, reject) => {
+        chrome.storage.sync.set({ einkSettings: this.settings }, () => {
+          if (chrome.runtime.lastError) {
+            console.error('Failed to save settings:', chrome.runtime.lastError);
+            this.showErrorMessage('Failed to save settings. Please try again.');
+            reject(chrome.runtime.lastError);
+          } else {
+            this.showSaveMessage();
+            resolve();
+          }
+        });
       });
-    });
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      this.showErrorMessage('An error occurred while saving settings.');
+      throw error;
+    }
   }
 
   private async resetToDefaults(): Promise<void> {
@@ -120,10 +180,24 @@ class OptionsController {
   private showSaveMessage(): void {
     const message = document.getElementById('saveMessage');
     if (message) {
+      message.textContent = 'Settings saved successfully!';
+      message.className = 'save-message';
       message.style.display = 'block';
       setTimeout(() => {
         message.style.display = 'none';
       }, 2000);
+    }
+  }
+
+  private showErrorMessage(errorText: string): void {
+    const message = document.getElementById('saveMessage');
+    if (message) {
+      message.textContent = errorText;
+      message.className = 'save-message error-message';
+      message.style.display = 'block';
+      setTimeout(() => {
+        message.style.display = 'none';
+      }, 3000);
     }
   }
 }

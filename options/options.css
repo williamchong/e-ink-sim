@@ -188,6 +188,10 @@ body {
   font-weight: 500;
 }
 
+.save-message.error-message {
+  background: #e74c3c;
+}
+
 @media (max-width: 600px) {
   body {
     padding: 10px;
