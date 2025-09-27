@@ -1,15 +1,7 @@
 // Options page script for E-ink Developer Extension
 // Handles advanced settings and configuration
 
-console.log('E-ink Developer Extension options page loaded');
-
-interface EinkSettings {
-  enabled: boolean;
-  deviceProfile: string;
-  grayscaleEnabled: boolean;
-  frameRateLimit: number;
-  scrollFlashEnabled: boolean;
-}
+import { EinkSettings, DEFAULT_SETTINGS } from '../types/settings.js';
 
 class OptionsController {
   private settings: EinkSettings | null = null;
@@ -27,13 +19,7 @@ class OptionsController {
   private async loadSettings(): Promise<void> {
     return new Promise((resolve) => {
       chrome.storage.sync.get(['einkSettings'], (result) => {
-        this.settings = result.einkSettings || {
-          enabled: false,
-          deviceProfile: 'kindle',
-          grayscaleEnabled: true,
-          frameRateLimit: 5,
-          scrollFlashEnabled: true,
-        };
+        this.settings = result.einkSettings || DEFAULT_SETTINGS;
         resolve();
       });
     });
@@ -101,7 +87,8 @@ class OptionsController {
       'scrollFlashEnabled'
     ) as HTMLInputElement;
 
-    this.settings.deviceProfile = deviceSelect?.value || 'kindle';
+    this.settings.deviceProfile =
+      (deviceSelect?.value as 'kindle' | 'kobo' | 'remarkable') || 'kindle';
     this.settings.grayscaleEnabled = grayscaleCheck?.checked || true;
     this.settings.frameRateLimit = parseInt(frameRateInput?.value || '5', 10);
     this.settings.scrollFlashEnabled = scrollFlashCheck?.checked || true;
@@ -115,13 +102,7 @@ class OptionsController {
   }
 
   private async resetToDefaults(): Promise<void> {
-    this.settings = {
-      enabled: false,
-      deviceProfile: 'kindle',
-      grayscaleEnabled: true,
-      frameRateLimit: 5,
-      scrollFlashEnabled: true,
-    };
+    this.settings = { ...DEFAULT_SETTINGS };
 
     await this.saveSettings();
     this.updateUI();

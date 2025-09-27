@@ -1,0 +1,61 @@
+// Shared TypeScript interfaces for E-ink Developer Extension
+
+export interface EinkSettings {
+  enabled: boolean;
+  deviceProfile: 'kindle' | 'kobo' | 'remarkable';
+  grayscaleEnabled: boolean;
+  frameRateLimit: number;
+  scrollFlashEnabled: boolean;
+}
+
+export interface MessageRequest {
+  action: string;
+  settings?: EinkSettings;
+  tabId?: number;
+  data?: any;
+}
+
+export interface MessageResponse {
+  success?: boolean;
+  settings?: EinkSettings;
+  error?: string;
+  data?: any;
+}
+
+export interface DeviceProfile {
+  id: string;
+  name: string;
+  maxFPS: number;
+  grayscaleFilter: string;
+}
+
+// Default settings for new installations
+export const DEFAULT_SETTINGS: EinkSettings = {
+  enabled: false,
+  deviceProfile: 'kindle',
+  grayscaleEnabled: true,
+  frameRateLimit: 5,
+  scrollFlashEnabled: true,
+};
+
+// Device profiles for MVP
+export const DEVICE_PROFILES: Record<string, DeviceProfile> = {
+  kindle: {
+    id: 'kindle',
+    name: 'Kindle Paperwhite',
+    maxFPS: 5,
+    grayscaleFilter: 'grayscale(1) contrast(1.2)',
+  },
+  kobo: {
+    id: 'kobo',
+    name: 'Kobo Clara HD',
+    maxFPS: 4,
+    grayscaleFilter: 'grayscale(1) contrast(1.1)',
+  },
+  remarkable: {
+    id: 'remarkable',
+    name: 'reMarkable 2',
+    maxFPS: 8,
+    grayscaleFilter: 'grayscale(1) contrast(1.3)',
+  },
+};

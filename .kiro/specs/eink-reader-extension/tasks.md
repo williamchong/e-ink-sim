@@ -14,7 +14,7 @@
   - **Done when**: Extension loads in Chrome developer mode without errors
   - _Requirements: 8.1, 8.2, 8.3_
 
-- [ ] 1.2. Implement basic service worker (1.5 hours)
+- [x] 1.2. Implement basic service worker (1.5 hours)
 
   - Create service worker for extension lifecycle management
   - Implement chrome.storage integration for settings persistence

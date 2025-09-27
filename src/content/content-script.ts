@@ -1,16 +1,7 @@
 // Content script for E-ink Developer Extension
 // Handles page injection, CSS modifications, and API overrides
 
-console.log('E-ink Developer Extension content script loaded');
-
-// Types for settings
-interface EinkSettings {
-  enabled: boolean;
-  deviceProfile: string;
-  grayscaleEnabled: boolean;
-  frameRateLimit: number;
-  scrollFlashEnabled: boolean;
-}
+import { EinkSettings, DEFAULT_SETTINGS } from '../types/settings.js';
 
 class EinkSimulator {
   private settings: EinkSettings | null = null;
@@ -34,7 +25,7 @@ class EinkSimulator {
     });
 
     // Listen for messages from popup
-    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
       if (request.action === 'toggleSimulation') {
         this.toggleSimulation();
         sendResponse({ success: true });
@@ -48,13 +39,7 @@ class EinkSimulator {
   private async loadSettings(): Promise<void> {
     return new Promise((resolve) => {
       chrome.storage.sync.get(['einkSettings'], (result) => {
-        this.settings = result.einkSettings || {
-          enabled: false,
-          deviceProfile: 'kindle',
-          grayscaleEnabled: true,
-          frameRateLimit: 5,
-          scrollFlashEnabled: true,
-        };
+        this.settings = result.einkSettings || DEFAULT_SETTINGS;
         resolve();
       });
     });
@@ -71,8 +56,6 @@ class EinkSimulator {
   }
 
   private enableSimulation(): void {
-    console.log('Enabling e-ink simulation');
-
     // Apply CSS transformations
     this.injectCSS();
 
@@ -81,8 +64,6 @@ class EinkSimulator {
   }
 
   private disableSimulation(): void {
-    console.log('Disabling e-ink simulation');
-
     // Remove CSS transformations
     this.removeCSS();
   }
