@@ -5,8 +5,16 @@ import {
   EinkSettings,
   MessageRequest,
   MessageResponse,
-  DEFAULT_SETTINGS,
 } from '../types/settings.js';
+
+// Default settings for new installations
+const DEFAULT_SETTINGS: EinkSettings = {
+  enabled: false,
+  deviceProfile: 'kindle',
+  grayscaleEnabled: true,
+  frameRateLimit: 5,
+  scrollFlashEnabled: true,
+};
 
 // Update extension icon based on simulation state
 function updateIcon(enabled: boolean): void {

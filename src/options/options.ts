@@ -1,7 +1,16 @@
 // Options page script for E-ink Developer Extension
 // Handles advanced settings and configuration
 
-import { EinkSettings, DEFAULT_SETTINGS } from '../types/settings.js';
+import { EinkSettings } from '../types/settings.js';
+
+// Default settings for options page
+const DEFAULT_SETTINGS: EinkSettings = {
+  enabled: false,
+  deviceProfile: 'kindle',
+  grayscaleEnabled: true,
+  frameRateLimit: 5,
+  scrollFlashEnabled: true,
+};
 
 class OptionsController {
   private settings: EinkSettings | null = null;

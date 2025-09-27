@@ -29,15 +29,6 @@ export interface DeviceProfile {
   grayscaleFilter: string;
 }
 
-// Default settings for new installations
-export const DEFAULT_SETTINGS: EinkSettings = {
-  enabled: false,
-  deviceProfile: 'kindle',
-  grayscaleEnabled: true,
-  frameRateLimit: 5,
-  scrollFlashEnabled: true,
-};
-
 // Device profiles for MVP
 export const DEVICE_PROFILES: Record<string, DeviceProfile> = {
   kindle: {

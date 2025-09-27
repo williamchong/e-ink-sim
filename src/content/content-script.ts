@@ -1,11 +1,16 @@
 // Content script for E-ink Developer Extension
 // Handles page injection, CSS modifications, and API overrides
 
-import {
-  EinkSettings,
-  DEFAULT_SETTINGS,
-  DEVICE_PROFILES,
-} from '../types/settings.js';
+import { EinkSettings, DEVICE_PROFILES } from '../types/settings.js';
+
+// Default settings for content script
+const DEFAULT_SETTINGS: EinkSettings = {
+  enabled: false,
+  deviceProfile: 'kindle',
+  grayscaleEnabled: true,
+  frameRateLimit: 5,
+  scrollFlashEnabled: true,
+};
 
 class EinkSimulator {
   private settings: EinkSettings | null = null;
