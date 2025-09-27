@@ -35,8 +35,12 @@ class EinkSimulator {
 
     // Listen for messages from popup
     chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
-      if (request.action === 'toggleSimulation') {
-        this.toggleSimulation();
+      if (request.action === 'updateSimulation') {
+        // Update settings with the state from popup (don't toggle)
+        if (this.settings) {
+          this.settings.enabled = request.enabled;
+          this.applySimulation();
+        }
         sendResponse({ success: true });
       }
     });
@@ -138,13 +142,6 @@ class EinkSimulator {
     }
   }
 
-  private toggleSimulation(): void {
-    if (!this.settings) return;
-
-    this.settings.enabled = !this.settings.enabled;
-    chrome.storage.sync.set({ einkSettings: this.settings });
-  }
-
   /**
    * Override JavaScript APIs to simulate e-ink behavior
    * Creates foundation for frame rate limiting and animation control
@@ -160,14 +157,11 @@ class EinkSimulator {
       const frameRateLimit = this.settings?.frameRateLimit || 5;
       const frameInterval = 1000 / frameRateLimit; // Convert FPS to milliseconds
 
-      window.requestAnimationFrame = (
-        callback: FrameRequestCallback
-      ): number => 
+      window.requestAnimationFrame = (callback: FrameRequestCallback): number =>
         // Use setTimeout to throttle frame rate to e-ink appropriate speed
-         window.setTimeout(() => {
+        window.setTimeout(() => {
           callback(performance.now());
-        }, frameInterval)
-      ;
+        }, frameInterval);
 
       this.isAPIOverrideActive = true;
       console.log(

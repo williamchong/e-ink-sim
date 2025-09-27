@@ -22,6 +22,9 @@ class PopupController {
     await this.loadSettings();
     this.setupEventListeners();
     this.updateUI();
+
+    // Ensure content script is in sync with popup state
+    this.syncWithContentScript();
   }
 
   private async loadSettings(): Promise<void> {
@@ -100,13 +103,16 @@ class PopupController {
     await this.saveSettings();
     this.updateUI();
 
-    // Notify content script
+    // Notify content script of the new state (don't let it toggle again)
     const [tab] = await chrome.tabs.query({
       active: true,
       currentWindow: true,
     });
     if (tab.id) {
-      chrome.tabs.sendMessage(tab.id, { action: 'toggleSimulation' });
+      chrome.tabs.sendMessage(tab.id, {
+        action: 'updateSimulation',
+        enabled: this.settings.enabled,
+      });
     }
   }
 
@@ -123,6 +129,26 @@ class PopupController {
         resolve();
       });
     });
+  }
+
+  private async syncWithContentScript(): Promise<void> {
+    if (!this.settings) return;
+
+    try {
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
+      if (tab.id) {
+        chrome.tabs.sendMessage(tab.id, {
+          action: 'updateSimulation',
+          enabled: this.settings.enabled,
+        });
+      }
+    } catch (error) {
+      // Content script might not be loaded yet, that's okay
+      console.log('Could not sync with content script:', error);
+    }
   }
 }
 
