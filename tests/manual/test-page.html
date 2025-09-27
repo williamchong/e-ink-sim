@@ -92,7 +92,16 @@
         <h2>JavaScript API Tests</h2>
         <button onclick="testRequestAnimationFrame()">Test requestAnimationFrame</button>
         <button onclick="testExtensionMethods()">Test Extension Methods</button>
+        <button onclick="testAnimationSlowdown()">Test Animation Slowdown</button>
+        <button onclick="runFullAnimationTest()">Run Full Animation Test</button>
         <div id="test-results"></div>
+
+        <h2>Live Animation Test</h2>
+        <p>The box below uses requestAnimationFrame for smooth animation. With e-ink mode enabled, it should animate much slower (5 FPS instead of 60 FPS).</p>
+        <div id="live-animation-box" style="width: 100px; height: 100px; background: #4ecdc4; margin: 20px 0; position: relative;"></div>
+        <button onclick="startLiveAnimation()">Start Live Animation</button>
+        <button onclick="stopLiveAnimation()">Stop Live Animation</button>
+        <div id="animation-stats"></div>
 
         <h2>Scroll Test</h2>
         <p>Scroll down to test scroll behavior modifications</p>
@@ -106,6 +115,9 @@
     </div>
 
     <script>
+        let animationId = null;
+        let animationStats = { frameCount: 0, startTime: 0, lastFrameTime: 0 };
+
         function testRequestAnimationFrame() {
             const results = document.getElementById('test-results');
             const startTime = performance.now();
@@ -121,6 +133,135 @@
                     results.innerHTML += `<p style="color: orange;">⚠ Frame rate appears normal (e-ink mode may be disabled)</p>`;
                 }
             });
+        }
+
+        function testAnimationSlowdown() {
+            const results = document.getElementById('test-results');
+            results.innerHTML += '<p>Testing animation slowdown...</p>';
+
+            let frameCount = 0;
+            const startTime = performance.now();
+            const frameTimes = [];
+
+            function measureFrames() {
+                const currentTime = performance.now();
+                if (frameCount > 0) {
+                    frameTimes.push(currentTime - lastTime);
+                }
+                const lastTime = currentTime;
+                frameCount++;
+
+                if (frameCount < 20) {
+                    requestAnimationFrame(measureFrames);
+                } else {
+                    const totalTime = currentTime - startTime;
+                    const avgFrameTime = frameTimes.reduce((a, b) => a + b, 0) / frameTimes.length;
+                    const effectiveFPS = 1000 / avgFrameTime;
+
+                    results.innerHTML += `<p>Animation test completed:</p>`;
+                    results.innerHTML += `<p>• ${frameCount} frames in ${totalTime.toFixed(2)}ms</p>`;
+                    results.innerHTML += `<p>• Average frame time: ${avgFrameTime.toFixed(2)}ms</p>`;
+                    results.innerHTML += `<p>• Effective FPS: ${effectiveFPS.toFixed(2)}</p>`;
+
+                    if (effectiveFPS <= 10) {
+                        results.innerHTML += `<p style="color: green;">✓ Animation properly slowed down for e-ink</p>`;
+                    } else {
+                        results.innerHTML += `<p style="color: orange;">⚠ Animation may not be sufficiently slowed down</p>`;
+                    }
+                }
+            }
+
+            requestAnimationFrame(measureFrames);
+        }
+
+        async function runFullAnimationTest() {
+            const results = document.getElementById('test-results');
+            results.innerHTML += '<p>Running full animation test...</p>';
+
+            if (window.einkSimulator && typeof window.einkSimulator.testRequestAnimationFrame === 'function') {
+                try {
+                    const testResult = await window.einkSimulator.testRequestAnimationFrame();
+                    
+                    results.innerHTML += `<h4>Full Animation Test Results:</h4>`;
+                    results.innerHTML += `<p>• Frame rate limit: ${testResult.frameRateLimit} FPS</p>`;
+                    results.innerHTML += `<p>• Expected frame time: ${testResult.expectedFrameTime.toFixed(2)}ms</p>`;
+                    results.innerHTML += `<p>• Average frame time: ${testResult.averageFrameTime.toFixed(2)}ms</p>`;
+                    results.innerHTML += `<p>• Override active: ${testResult.isOverridden ? '✓ Yes' : '✗ No'}</p>`;
+                    
+                    if (testResult.isOverridden) {
+                        results.innerHTML += `<p style="color: green;">✓ requestAnimationFrame override working correctly</p>`;
+                    } else {
+                        results.innerHTML += `<p style="color: red;">✗ requestAnimationFrame override not working</p>`;
+                    }
+                } catch (error) {
+                    results.innerHTML += `<p style="color: red;">Error running test: ${error.message}</p>`;
+                }
+            } else {
+                results.innerHTML += `<p style="color: red;">Extension test method not available</p>`;
+            }
+        }
+
+        function startLiveAnimation() {
+            if (animationId) return; // Already running
+
+            const box = document.getElementById('live-animation-box');
+            const stats = document.getElementById('animation-stats');
+            
+            animationStats = { 
+                frameCount: 0, 
+                startTime: performance.now(), 
+                lastFrameTime: performance.now(),
+                frameTimes: []
+            };
+
+            function animate() {
+                const currentTime = performance.now();
+                const deltaTime = currentTime - animationStats.lastFrameTime;
+                animationStats.frameTimes.push(deltaTime);
+                animationStats.lastFrameTime = currentTime;
+                animationStats.frameCount++;
+
+                // Animate the box
+                const elapsed = currentTime - animationStats.startTime;
+                const x = Math.sin(elapsed * 0.002) * 100;
+                const y = Math.cos(elapsed * 0.003) * 50;
+                box.style.transform = `translate(${x}px, ${y}px)`;
+
+                // Update stats every 30 frames
+                if (animationStats.frameCount % 30 === 0) {
+                    const avgFrameTime = animationStats.frameTimes.slice(-30).reduce((a, b) => a + b, 0) / 30;
+                    const currentFPS = 1000 / avgFrameTime;
+                    const totalTime = currentTime - animationStats.startTime;
+                    
+                    stats.innerHTML = `
+                        <p><strong>Live Animation Stats:</strong></p>
+                        <p>• Frames: ${animationStats.frameCount}</p>
+                        <p>• Time: ${(totalTime / 1000).toFixed(1)}s</p>
+                        <p>• Current FPS: ${currentFPS.toFixed(1)}</p>
+                        <p>• Avg frame time: ${avgFrameTime.toFixed(1)}ms</p>
+                    `;
+                }
+
+                animationId = requestAnimationFrame(animate);
+            }
+
+            animationId = requestAnimationFrame(animate);
+        }
+
+        function stopLiveAnimation() {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+                
+                const box = document.getElementById('live-animation-box');
+                box.style.transform = 'translate(0px, 0px)';
+                
+                const stats = document.getElementById('animation-stats');
+                const totalTime = performance.now() - animationStats.startTime;
+                const avgFPS = (animationStats.frameCount / totalTime) * 1000;
+                
+                stats.innerHTML += `<p style="color: blue;"><strong>Final Stats:</strong> ${animationStats.frameCount} frames, ${avgFPS.toFixed(1)} avg FPS</p>`;
+            }
         }
 
         function testExtensionMethods() {

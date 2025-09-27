@@ -15,6 +15,9 @@ class EinkSimulator {
   private originalRequestAnimationFrame: typeof requestAnimationFrame | null =
     null;
 
+  private originalCancelAnimationFrame: typeof cancelAnimationFrame | null =
+    null;
+
   private isAPIOverrideActive = false;
 
   constructor() {
@@ -215,23 +218,92 @@ class EinkSimulator {
       // Store original requestAnimationFrame
       this.originalRequestAnimationFrame = window.requestAnimationFrame;
 
-      // Override requestAnimationFrame for frame rate limiting
-      const frameRateLimit = this.settings?.frameRateLimit || 5;
-      const frameInterval = 1000 / frameRateLimit; // Convert FPS to milliseconds
-
-      window.requestAnimationFrame = (callback: FrameRequestCallback): number =>
-        // Use setTimeout to throttle frame rate to e-ink appropriate speed
-        window.setTimeout(() => {
-          callback(performance.now());
-        }, frameInterval);
+      // Enhanced requestAnimationFrame override with proper frame rate limiting
+      this.overrideRequestAnimationFrame();
 
       this.isAPIOverrideActive = true;
+      const frameRateLimit = this.settings?.frameRateLimit || 5;
       console.log(
         `[E-ink Extension] API overrides active - Frame rate limited to ${frameRateLimit} FPS`
       );
     } catch (error) {
       console.warn('[E-ink Extension] Failed to override APIs:', error);
     }
+  }
+
+  /**
+   * Enhanced requestAnimationFrame override with accurate frame rate limiting
+   * Implements proper timing control for e-ink display simulation
+   */
+  private overrideRequestAnimationFrame(): void {
+    const frameRateLimit = this.settings?.frameRateLimit || 5;
+    const frameInterval = 1000 / frameRateLimit; // Convert FPS to milliseconds
+
+    let lastFrameTime = 0;
+    let frameId = 0;
+    const pendingCallbacks = new Map<number, FrameRequestCallback>();
+
+    // Store original cancelAnimationFrame
+    this.originalCancelAnimationFrame = window.cancelAnimationFrame;
+
+    // Enhanced requestAnimationFrame with proper timing
+    window.requestAnimationFrame = (callback: FrameRequestCallback): number => {
+      frameId += 1;
+      const currentFrameId = frameId;
+      pendingCallbacks.set(currentFrameId, callback);
+
+      const now = performance.now();
+      const timeSinceLastFrame = now - lastFrameTime;
+
+      if (timeSinceLastFrame >= frameInterval) {
+        // Execute immediately if enough time has passed
+        lastFrameTime = now;
+        setTimeout(() => {
+          const cb = pendingCallbacks.get(currentFrameId);
+          if (cb) {
+            pendingCallbacks.delete(currentFrameId);
+            try {
+              cb(performance.now());
+            } catch (error) {
+              console.warn(
+                '[E-ink Extension] Animation callback error:',
+                error
+              );
+            }
+          }
+        }, 0);
+      } else {
+        // Wait for the remaining time to maintain consistent frame rate
+        const remainingTime = frameInterval - timeSinceLastFrame;
+        setTimeout(() => {
+          const cb = pendingCallbacks.get(currentFrameId);
+          if (cb) {
+            pendingCallbacks.delete(currentFrameId);
+            lastFrameTime = performance.now();
+            try {
+              cb(performance.now());
+            } catch (error) {
+              console.warn(
+                '[E-ink Extension] Animation callback error:',
+                error
+              );
+            }
+          }
+        }, remainingTime);
+      }
+
+      return currentFrameId;
+    };
+
+    // Override cancelAnimationFrame to work with our custom implementation
+    window.cancelAnimationFrame = (id: number): void => {
+      if (pendingCallbacks.has(id)) {
+        pendingCallbacks.delete(id);
+      } else if (this.originalCancelAnimationFrame) {
+        // Fallback to original implementation for any edge cases
+        this.originalCancelAnimationFrame(id);
+      }
+    };
   }
 
   /**
@@ -245,6 +317,12 @@ class EinkSimulator {
       if (this.originalRequestAnimationFrame) {
         window.requestAnimationFrame = this.originalRequestAnimationFrame;
         this.originalRequestAnimationFrame = null;
+      }
+
+      // Restore original cancelAnimationFrame
+      if (this.originalCancelAnimationFrame) {
+        window.cancelAnimationFrame = this.originalCancelAnimationFrame;
+        this.originalCancelAnimationFrame = null;
       }
 
       this.isAPIOverrideActive = false;
@@ -311,6 +389,54 @@ class EinkSimulator {
         `[E-ink Extension] Grayscale toggled: ${this.settings.grayscaleEnabled}`
       );
     }
+  }
+
+  /**
+   * Test requestAnimationFrame override functionality
+   * Measures frame timing to verify throttling is working
+   */
+  public testRequestAnimationFrame(): Promise<{
+    isOverridden: boolean;
+    averageFrameTime: number;
+    expectedFrameTime: number;
+    frameRateLimit: number;
+    testResults: number[];
+  }> {
+    return new Promise((resolve) => {
+      const frameRateLimit = this.settings?.frameRateLimit || 5;
+      const expectedFrameTime = 1000 / frameRateLimit;
+      const frameTimes: number[] = [];
+      let lastTime = performance.now();
+      let frameCount = 0;
+      const maxFrames = 10;
+
+      const measureFrame = () => {
+        const currentTime = performance.now();
+        const frameTime = currentTime - lastTime;
+        frameTimes.push(frameTime);
+        lastTime = currentTime;
+        frameCount += 1;
+
+        if (frameCount < maxFrames) {
+          requestAnimationFrame(measureFrame);
+        } else {
+          // Calculate results
+          const averageFrameTime =
+            frameTimes.reduce((a, b) => a + b, 0) / frameTimes.length;
+          const isOverridden = averageFrameTime > expectedFrameTime * 0.8; // Allow 20% tolerance
+
+          resolve({
+            isOverridden,
+            averageFrameTime,
+            expectedFrameTime,
+            frameRateLimit,
+            testResults: frameTimes,
+          });
+        }
+      };
+
+      requestAnimationFrame(measureFrame);
+    });
   }
 }
 

@@ -39,7 +39,7 @@
   - **Done when**: Grayscale filter works on GitHub, Medium, Wikipedia
   - _Requirements: 1.2, 1.3, 2.3, 4.4_
 
-- [ ] 1.4b. Add basic requestAnimationFrame override (2 hours)
+- [x] 1.4b. Add basic requestAnimationFrame override (2 hours)
   - Override requestAnimationFrame API to throttle animations to 5 FPS
   - Implement simple frame rate limiting
   - Test animation slowdown on animation-heavy websites
