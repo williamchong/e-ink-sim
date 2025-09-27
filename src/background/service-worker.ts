@@ -159,6 +159,34 @@ async function handleNotifyContentScript(
   }
 }
 
+async function handleInjectWorldScript(
+  tabId: number,
+  sendResponse: (response: MessageResponse) => void
+): Promise<void> {
+  try {
+    if (!tabId) {
+      throw new Error('No tab ID provided');
+    }
+
+    // Inject world script using chrome.scripting API with MAIN world
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      files: ['content/world-script.js'],
+      world: 'MAIN',
+    });
+
+    sendResponse({ success: true });
+    // eslint-disable-next-line no-console
+    console.log(
+      '[E-ink Extension] World script injected via service worker for tab',
+      tabId
+    );
+  } catch (error) {
+    console.warn('[E-ink Extension] Failed to inject world script:', error);
+    sendResponse({ success: false, error: 'Failed to inject world script' });
+  }
+}
+
 // Extension installation and update handler
 chrome.runtime.onInstalled.addListener(async (details) => {
   try {
@@ -183,7 +211,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 
 // Enhanced message passing between components
 chrome.runtime.onMessage.addListener(
-  (request: MessageRequest, _sender, sendResponse) => {
+  (request: MessageRequest, sender, sendResponse) => {
     // Handle different message types
     switch (request.action) {
       case 'getSettings':
@@ -205,6 +233,17 @@ chrome.runtime.onMessage.addListener(
       case 'notifyContentScript':
         handleNotifyContentScript(request.tabId!, request.data, sendResponse);
         return true;
+
+      case 'injectWorldScript': {
+        // Get tab ID from sender instead of request
+        const tabId = sender.tab?.id || request.tabId;
+        if (tabId) {
+          handleInjectWorldScript(tabId, sendResponse);
+        } else {
+          sendResponse({ success: false, error: 'No tab ID available' });
+        }
+        return true;
+      }
 
       default:
         sendResponse({ success: false, error: 'Unknown action' });

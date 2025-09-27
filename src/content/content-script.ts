@@ -17,19 +17,16 @@ class EinkSimulator {
 
   private styleElement: HTMLStyleElement | null = null;
 
-  private originalRequestAnimationFrame: typeof requestAnimationFrame | null =
-    null;
-
-  private originalCancelAnimationFrame: typeof cancelAnimationFrame | null =
-    null;
-
-  private isAPIOverrideActive = false;
+  private isWorldScriptInjected = false;
 
   constructor() {
     this.init();
   }
 
   private async init(): Promise<void> {
+    // Request world script injection from service worker
+    await this.requestWorldScriptInjection();
+
     // Load settings from storage
     await this.loadSettings();
 
@@ -97,16 +94,16 @@ class EinkSimulator {
     // Apply CSS transformations
     this.injectCSS();
 
-    // Override JavaScript APIs for e-ink simulation
-    this.overrideAPIs();
+    // Update world script configuration
+    this.updateWorldScriptConfig();
   }
 
   private disableSimulation(): void {
     // Remove CSS transformations
     this.removeCSS();
 
-    // Restore original APIs
-    this.restoreAPIs();
+    // Update world script configuration
+    this.updateWorldScriptConfig();
   }
 
   private injectCSS(): void {
@@ -213,130 +210,102 @@ class EinkSimulator {
   }
 
   /**
-   * Override JavaScript APIs to simulate e-ink behavior
-   * Creates foundation for frame rate limiting and animation control
+   * Request world script injection from service worker (bypasses CSP)
    */
-  private overrideAPIs(): void {
-    if (this.isAPIOverrideActive) return;
+  private async requestWorldScriptInjection(): Promise<void> {
+    if (this.isWorldScriptInjected) return;
 
     try {
-      // Store original requestAnimationFrame
-      this.originalRequestAnimationFrame = window.requestAnimationFrame;
+      // Send message to service worker to inject world script
+      // Service worker will determine the tab ID from the sender
+      const response = await chrome.runtime.sendMessage({
+        action: 'injectWorldScript',
+      });
 
-      // Enhanced requestAnimationFrame override with proper frame rate limiting
-      this.overrideRequestAnimationFrame();
-
-      this.isAPIOverrideActive = true;
-      const frameRateLimit = this.settings?.frameRateLimit || 5;
-      console.log(
-        `[E-ink Extension] API overrides active - Frame rate limited to ${frameRateLimit} FPS`
-      );
-    } catch (error) {
-      console.warn('[E-ink Extension] Failed to override APIs:', error);
-    }
-  }
-
-  /**
-   * Enhanced requestAnimationFrame override with accurate frame rate limiting
-   * Implements proper timing control for e-ink display simulation
-   */
-  private overrideRequestAnimationFrame(): void {
-    const frameRateLimit = this.settings?.frameRateLimit || 5;
-    const frameInterval = 1000 / frameRateLimit; // Convert FPS to milliseconds
-
-    let lastFrameTime = 0;
-    let frameId = 0;
-    const pendingCallbacks = new Map<number, FrameRequestCallback>();
-
-    // Store original cancelAnimationFrame
-    this.originalCancelAnimationFrame = window.cancelAnimationFrame;
-
-    // Enhanced requestAnimationFrame with proper timing
-    window.requestAnimationFrame = (callback: FrameRequestCallback): number => {
-      frameId += 1;
-      const currentFrameId = frameId;
-      pendingCallbacks.set(currentFrameId, callback);
-
-      const now = performance.now();
-      const timeSinceLastFrame = now - lastFrameTime;
-
-      if (timeSinceLastFrame >= frameInterval) {
-        // Execute immediately if enough time has passed
-        lastFrameTime = now;
-        setTimeout(() => {
-          const cb = pendingCallbacks.get(currentFrameId);
-          if (cb) {
-            pendingCallbacks.delete(currentFrameId);
-            try {
-              cb(performance.now());
-            } catch (error) {
-              console.warn(
-                '[E-ink Extension] Animation callback error:',
-                error
-              );
-            }
-          }
-        }, 0);
+      if (response?.success) {
+        // Wait for world script to be ready with polling fallback
+        await this.waitForWorldScript();
+        this.isWorldScriptInjected = true;
+        console.log(
+          '[E-ink Extension] World script injected via service worker'
+        );
       } else {
-        // Wait for the remaining time to maintain consistent frame rate
-        const remainingTime = frameInterval - timeSinceLastFrame;
-        setTimeout(() => {
-          const cb = pendingCallbacks.get(currentFrameId);
-          if (cb) {
-            pendingCallbacks.delete(currentFrameId);
-            lastFrameTime = performance.now();
-            try {
-              cb(performance.now());
-            } catch (error) {
-              console.warn(
-                '[E-ink Extension] Animation callback error:',
-                error
-              );
-            }
-          }
-        }, remainingTime);
+        throw new Error('Service worker failed to inject world script');
       }
-
-      return currentFrameId;
-    };
-
-    // Override cancelAnimationFrame to work with our custom implementation
-    window.cancelAnimationFrame = (id: number): void => {
-      if (pendingCallbacks.has(id)) {
-        pendingCallbacks.delete(id);
-      } else if (this.originalCancelAnimationFrame) {
-        // Fallback to original implementation for any edge cases
-        this.originalCancelAnimationFrame(id);
-      }
-    };
+    } catch (error) {
+      console.warn(
+        '[E-ink Extension] Failed to request world script injection:',
+        error
+      );
+      // Skip fallback since it will be blocked by CSP anyway
+      console.log(
+        '[E-ink Extension] Continuing without world script - API overrides disabled'
+      );
+    }
   }
 
   /**
-   * Restore original JavaScript APIs
+   * Wait for world script to be ready with both event listening and polling
    */
-  private restoreAPIs(): void {
-    if (!this.isAPIOverrideActive) return;
+  private async waitForWorldScript(): Promise<void> {
+    return new Promise<void>((resolve) => {
+      let resolved = false;
 
-    try {
-      // Restore original requestAnimationFrame
-      if (this.originalRequestAnimationFrame) {
-        window.requestAnimationFrame = this.originalRequestAnimationFrame;
-        this.originalRequestAnimationFrame = null;
-      }
+      const resolveOnce = () => {
+        if (!resolved) {
+          resolved = true;
+          resolve();
+        }
+      };
 
-      // Restore original cancelAnimationFrame
-      if (this.originalCancelAnimationFrame) {
-        window.cancelAnimationFrame = this.originalCancelAnimationFrame;
-        this.originalCancelAnimationFrame = null;
-      }
+      // Method 1: Listen for ready event
+      const handleReady = () => {
+        window.removeEventListener('eink-world-ready', handleReady);
+        resolveOnce();
+      };
+      window.addEventListener('eink-world-ready', handleReady);
 
-      this.isAPIOverrideActive = false;
-      console.log(
-        '[E-ink Extension] API overrides disabled - Original APIs restored'
-      );
-    } catch (error) {
-      console.warn('[E-ink Extension] Failed to restore APIs:', error);
-    }
+      // Method 2: Poll for world script availability
+      let pollCount = 0;
+      const pollInterval = setInterval(() => {
+        pollCount += 1;
+
+        // Check if world script is available
+        if ((window as any).einkWorldReady) {
+          clearInterval(pollInterval);
+          window.removeEventListener('eink-world-ready', handleReady);
+          resolveOnce();
+          return;
+        }
+
+        // Give up after 50 attempts (5 seconds)
+        if (pollCount >= 50) {
+          clearInterval(pollInterval);
+          window.removeEventListener('eink-world-ready', handleReady);
+          console.warn(
+            '[E-ink Extension] World script ready timeout after polling'
+          );
+          resolveOnce();
+        }
+      }, 100);
+    });
+  }
+
+  /**
+   * Update world script configuration
+   */
+  private updateWorldScriptConfig(): void {
+    if (!this.isWorldScriptInjected || !this.settings) return;
+
+    const config = {
+      frameRateLimit: this.settings.frameRateLimit,
+      enabled: this.settings.enabled,
+    };
+
+    // Send configuration to world script
+    window.dispatchEvent(
+      new CustomEvent('eink-config-update', { detail: config })
+    );
   }
 
   /**
@@ -355,7 +324,7 @@ class EinkSimulator {
    * Can be called from browser console for debugging
    */
   public testAPIOverrides(): boolean {
-    return this.isAPIOverrideActive;
+    return (this.isWorldScriptInjected && this.settings?.enabled) || false;
   }
 
   /**

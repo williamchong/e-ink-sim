@@ -9,7 +9,14 @@ export interface EinkSettings {
 }
 
 export interface MessageRequest {
-  action: string;
+  action:
+    | 'getSettings'
+    | 'saveSettings'
+    | 'toggleSimulation'
+    | 'getTabState'
+    | 'notifyContentScript'
+    | 'injectWorldScript'
+    | string;
   settings?: EinkSettings;
   tabId?: number;
   data?: any;
