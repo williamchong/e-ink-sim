@@ -10,6 +10,8 @@ const DEFAULT_SETTINGS: EinkSettings = {
   grayscaleEnabled: true,
   frameRateLimit: 5,
   scrollFlashEnabled: true,
+  videoHandlingEnabled: true,
+  videoPlaybackRate: 0.5,
 };
 
 class EinkSimulator {
@@ -94,6 +96,9 @@ class EinkSimulator {
     // Apply CSS transformations
     this.injectCSS();
 
+    // Handle video elements
+    this.handleVideoElements();
+
     // Update world script configuration
     this.updateWorldScriptConfig();
   }
@@ -101,6 +106,9 @@ class EinkSimulator {
   private disableSimulation(): void {
     // Remove CSS transformations
     this.removeCSS();
+
+    // Restore video elements
+    this.restoreVideoElements();
 
     // Update world script configuration
     this.updateWorldScriptConfig();
@@ -209,6 +217,149 @@ class EinkSimulator {
     }
   }
 
+  private handleVideoElements(): void {
+    if (!this.settings?.videoHandlingEnabled) return;
+
+    // Find all video elements on the page
+    const videos = document.querySelectorAll('video');
+
+    videos.forEach((video) => {
+      this.applyVideoEinkSettings(video);
+    });
+
+    // Watch for dynamically added video elements
+    this.observeVideoElements();
+
+    console.log(
+      `[E-ink Extension] Applied e-ink settings to ${videos.length} video elements`
+    );
+  }
+
+  private applyVideoEinkSettings(video: HTMLVideoElement): void {
+    if (!this.settings) return;
+
+    // Create local references to avoid param reassignment
+    const videoElement = video;
+    const { dataset } = videoElement;
+    const { style } = videoElement;
+
+    // Store original playback rate for restoration
+    if (!dataset.originalPlaybackRate) {
+      dataset.originalPlaybackRate = videoElement.playbackRate.toString();
+    }
+
+    // Apply e-ink appropriate playback rate
+    videoElement.playbackRate = this.settings.videoPlaybackRate;
+
+    // Apply e-ink visual filters
+    const deviceProfile = DEVICE_PROFILES[this.settings.deviceProfile];
+    const grayscaleFilter =
+      deviceProfile?.grayscaleFilter || 'grayscale(1) contrast(1.2)';
+
+    // Store original filter for restoration
+    if (!dataset.originalFilter) {
+      dataset.originalFilter = style.filter || 'none';
+    }
+
+    // Apply e-ink specific video filters
+    style.filter = `${grayscaleFilter} brightness(0.9) saturate(0)`;
+    style.transition = 'filter 0.3s ease';
+
+    // Mark as processed
+    dataset.einkProcessed = 'true';
+
+    console.log(
+      `[E-ink Extension] Applied e-ink settings to video: playbackRate=${this.settings.videoPlaybackRate}, filter=${style.filter}`
+    );
+  }
+
+  private restoreVideoElements(): void {
+    // Find all processed video elements
+    const videos = document.querySelectorAll(
+      'video[data-eink-processed="true"]'
+    );
+
+    videos.forEach((video) => {
+      this.restoreVideoSettings(video as HTMLVideoElement);
+    });
+
+    // Stop observing for new video elements
+    this.stopObservingVideoElements();
+
+    console.log(
+      `[E-ink Extension] Restored ${videos.length} video elements to original settings`
+    );
+  }
+
+  private restoreVideoSettings(video: HTMLVideoElement): void {
+    // Create local references to avoid param reassignment
+    const videoElement = video;
+    const { dataset } = videoElement;
+    const { style } = videoElement;
+
+    // Restore original playback rate
+    if (dataset.originalPlaybackRate) {
+      videoElement.playbackRate = parseFloat(dataset.originalPlaybackRate);
+      delete dataset.originalPlaybackRate;
+    }
+
+    // Restore original filter
+    if (dataset.originalFilter) {
+      style.filter =
+        dataset.originalFilter === 'none' ? '' : dataset.originalFilter;
+      delete dataset.originalFilter;
+    }
+
+    // Remove processing marker
+    delete dataset.einkProcessed;
+
+    console.log(
+      `[E-ink Extension] Restored video to original settings: playbackRate=${videoElement.playbackRate}, filter=${style.filter || 'none'}`
+    );
+  }
+
+  private videoObserver: MutationObserver | null = null;
+
+  private observeVideoElements(): void {
+    if (this.videoObserver) return;
+
+    this.videoObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const element = node as Element;
+
+            // Check if the added node is a video element
+            if (element.tagName === 'VIDEO') {
+              this.applyVideoEinkSettings(element as HTMLVideoElement);
+            }
+
+            // Check for video elements within the added node
+            const videos = element.querySelectorAll('video');
+            videos.forEach((video) => {
+              this.applyVideoEinkSettings(video);
+            });
+          }
+        });
+      });
+    });
+
+    this.videoObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    console.log('[E-ink Extension] Started observing for new video elements');
+  }
+
+  private stopObservingVideoElements(): void {
+    if (this.videoObserver) {
+      this.videoObserver.disconnect();
+      this.videoObserver = null;
+      console.log('[E-ink Extension] Stopped observing for new video elements');
+    }
+  }
+
   /**
    * Request world script injection from service worker (bypasses CSP)
    */
@@ -301,6 +452,8 @@ class EinkSimulator {
       frameRateLimit: this.settings.frameRateLimit,
       enabled: this.settings.enabled,
       scrollFlashEnabled: this.settings.scrollFlashEnabled,
+      videoHandlingEnabled: this.settings.videoHandlingEnabled,
+      videoPlaybackRate: this.settings.videoPlaybackRate,
     };
 
     // Send configuration to world script
@@ -412,6 +565,41 @@ class EinkSimulator {
 
       requestAnimationFrame(measureFrame);
     });
+  }
+
+  /**
+   * Test video element handling functionality
+   * Verifies that video elements are properly detected and modified
+   */
+  public testVideoHandling(): {
+    enabled: boolean;
+    videosFound: number;
+    videosProcessed: number;
+    playbackRates: number[];
+    filtersApplied: string[];
+    observerActive: boolean;
+  } {
+    const videos = document.querySelectorAll('video');
+    const processedVideos = document.querySelectorAll(
+      'video[data-eink-processed="true"]'
+    );
+
+    const playbackRates: number[] = [];
+    const filtersApplied: string[] = [];
+
+    videos.forEach((video) => {
+      playbackRates.push((video as HTMLVideoElement).playbackRate);
+      filtersApplied.push((video as HTMLVideoElement).style.filter || 'none');
+    });
+
+    return {
+      enabled: this.settings?.videoHandlingEnabled || false,
+      videosFound: videos.length,
+      videosProcessed: processedVideos.length,
+      playbackRates,
+      filtersApplied,
+      observerActive: this.videoObserver !== null,
+    };
   }
 }
 

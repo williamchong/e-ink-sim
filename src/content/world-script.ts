@@ -6,6 +6,8 @@ interface EinkWorldConfig {
   frameRateLimit: number;
   enabled: boolean;
   scrollFlashEnabled: boolean;
+  videoHandlingEnabled: boolean;
+  videoPlaybackRate: number;
 }
 
 class EinkWorldOverrides {
@@ -21,6 +23,8 @@ class EinkWorldOverrides {
     frameRateLimit: 5,
     enabled: false,
     scrollFlashEnabled: true,
+    videoHandlingEnabled: true,
+    videoPlaybackRate: 0.5,
   };
 
   private scrollFlashOverlay: HTMLElement | null = null;

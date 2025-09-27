@@ -99,7 +99,7 @@
   - **Done when**: Realistic e-ink scroll flashing works on content-heavy pages
   - _Requirements: 4.2, 4.9, 5.4_
 
-- [ ] 2.2. Add video element handling
+- [x] 2.2. Add video element handling
   - Detect video elements and apply e-ink appropriate visual filters
   - Slow down video playback rate to simulate e-ink limitations (0.5x speed)
   - Apply grayscale and contrast filters to video elements

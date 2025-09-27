@@ -10,6 +10,8 @@ const DEFAULT_SETTINGS: EinkSettings = {
   grayscaleEnabled: true,
   frameRateLimit: 5,
   scrollFlashEnabled: true,
+  videoHandlingEnabled: true,
+  videoPlaybackRate: 0.5,
 };
 
 class OptionsController {

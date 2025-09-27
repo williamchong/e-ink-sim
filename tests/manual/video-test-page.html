@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-ink Extension Video Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .video-container {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+        }
+        
+        video {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            display: block;
+            margin: 10px 0;
+        }
+        
+        .test-info {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .controls {
+            margin: 10px 0;
+        }
+        
+        button {
+            margin: 5px;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+        
+        .status {
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>E-ink Extension Video Test Page</h1>
+    
+    <div class="test-info">
+        <h2>Test Instructions</h2>
+        <ol>
+            <li>Enable the E-ink Developer Extension</li>
+            <li>Observe that videos should:
+                <ul>
+                    <li>Play at 0.5x speed (half normal speed)</li>
+                    <li>Display in grayscale with enhanced contrast</li>
+                    <li>Have reduced brightness and saturation</li>
+                </ul>
+            </li>
+            <li>Use the test controls below to verify functionality</li>
+            <li>Check browser console for debug messages</li>
+        </ol>
+    </div>
+
+    <div class="video-container">
+        <h3>Test Video 1: Big Buck Bunny (Sample)</h3>
+        <video id="video1" controls>
+            <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+            <p>Your browser doesn't support HTML5 video. Here's a <a href="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4">link to the video</a> instead.</p>
+        </video>
+        <div class="status" id="video1-status">Status: Not loaded</div>
+    </div>
+
+    <div class="video-container">
+        <h3>Test Video 2: Elephant Dream (Sample)</h3>
+        <video id="video2" controls>
+            <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" type="video/mp4">
+            <p>Your browser doesn't support HTML5 video. Here's a <a href="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4">link to the video</a> instead.</p>
+        </video>
+        <div class="status" id="video2-status">Status: Not loaded</div>
+    </div>
+
+    <div class="controls">
+        <h3>Test Controls</h3>
+        <button onclick="checkVideoSettings()">Check Video Settings</button>
+        <button onclick="addDynamicVideo()">Add Dynamic Video</button>
+        <button onclick="testExtensionAPI()">Test Extension API</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+
+    <div id="test-results" class="test-info">
+        <h3>Test Results</h3>
+        <div id="results-content">Click "Check Video Settings" to see current video states</div>
+    </div>
+
+    <script>
+        // Update video status when videos load
+        document.querySelectorAll('video').forEach((video, index) => {
+            const statusElement = document.getElementById(`video${index + 1}-status`);
+            
+            video.addEventListener('loadedmetadata', () => {
+                updateVideoStatus(video, statusElement);
+            });
+            
+            video.addEventListener('ratechange', () => {
+                updateVideoStatus(video, statusElement);
+            });
+            
+            // Initial status update
+            if (video.readyState >= 1) {
+                updateVideoStatus(video, statusElement);
+            }
+        });
+
+        function updateVideoStatus(video, statusElement) {
+            const playbackRate = video.playbackRate;
+            const filter = video.style.filter || 'none';
+            const isEinkProcessed = video.dataset.einkProcessed === 'true';
+            
+            statusElement.innerHTML = `
+                Status: Loaded<br>
+                Playback Rate: ${playbackRate}x<br>
+                Filter: ${filter}<br>
+                E-ink Processed: ${isEinkProcessed ? 'Yes' : 'No'}
+            `;
+        }
+
+        function checkVideoSettings() {
+            const videos = document.querySelectorAll('video');
+            let results = '<h4>Current Video Settings:</h4>';
+            
+            videos.forEach((video, index) => {
+                const playbackRate = video.playbackRate;
+                const filter = video.style.filter || 'none';
+                const isEinkProcessed = video.dataset.einkProcessed === 'true';
+                const originalPlaybackRate = video.dataset.originalPlaybackRate || 'not set';
+                const originalFilter = video.dataset.originalFilter || 'not set';
+                
+                results += `
+                    <div style="margin: 10px 0; padding: 10px; border: 1px solid #ddd;">
+                        <strong>Video ${index + 1}:</strong><br>
+                        Current Playback Rate: ${playbackRate}x<br>
+                        Current Filter: ${filter}<br>
+                        E-ink Processed: ${isEinkProcessed ? 'Yes' : 'No'}<br>
+                        Original Playback Rate: ${originalPlaybackRate}<br>
+                        Original Filter: ${originalFilter}
+                    </div>
+                `;
+            });
+            
+            document.getElementById('results-content').innerHTML = results;
+        }
+
+        function addDynamicVideo() {
+            const container = document.createElement('div');
+            container.className = 'video-container';
+            container.innerHTML = `
+                <h3>Dynamic Test Video</h3>
+                <video controls>
+                    <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
+                    <p>Dynamic video test</p>
+                </video>
+                <div class="status">Status: Dynamic video added</div>
+            `;
+            
+            document.body.insertBefore(container, document.getElementById('test-results'));
+            
+            // Add event listeners to the new video
+            const newVideo = container.querySelector('video');
+            const statusElement = container.querySelector('.status');
+            
+            newVideo.addEventListener('loadedmetadata', () => {
+                updateVideoStatus(newVideo, statusElement);
+            });
+            
+            newVideo.addEventListener('ratechange', () => {
+                updateVideoStatus(newVideo, statusElement);
+            });
+            
+            document.getElementById('results-content').innerHTML = 
+                '<p>Dynamic video added! Check if e-ink settings are applied automatically.</p>';
+        }
+
+        function testExtensionAPI() {
+            // Test if the extension's content script API is available
+            if (window.einkSimulator) {
+                const testResult = window.einkSimulator.testVideoHandling();
+                
+                let results = '<h4>Extension API Test Results:</h4>';
+                results += `
+                    <div style="margin: 10px 0; padding: 10px; border: 1px solid #ddd;">
+                        <strong>Video Handling Status:</strong><br>
+                        Enabled: ${testResult.enabled}<br>
+                        Videos Found: ${testResult.videosFound}<br>
+                        Videos Processed: ${testResult.videosProcessed}<br>
+                        Observer Active: ${testResult.observerActive}<br>
+                        Playback Rates: [${testResult.playbackRates.join(', ')}]<br>
+                        Filters Applied: ${testResult.filtersApplied.length} filters
+                    </div>
+                `;
+                
+                document.getElementById('results-content').innerHTML = results;
+            } else {
+                document.getElementById('results-content').innerHTML = 
+                    '<p style="color: red;">Extension API not available. Make sure the E-ink Developer Extension is installed and enabled.</p>';
+            }
+        }
+
+        function clearResults() {
+            document.getElementById('results-content').innerHTML = 
+                'Click "Check Video Settings" to see current video states';
+        }
+
+        // Log video events for debugging
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('[Video Test] Page loaded, videos found:', document.querySelectorAll('video').length);
+            
+            // Monitor for extension activity
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'VIDEO') {
+                            console.log('[Video Test] New video element detected:', node);
+                        }
+                    });
+                });
+            });
+            
+            observer.observe(document.body, { childList: true, subtree: true });
+        });
+    </script>
+</body>
+</html>

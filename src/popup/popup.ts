@@ -1,15 +1,9 @@
 // Popup script for E-ink Developer Extension
 // Handles popup UI interactions and settings management
 
-console.log('E-ink Developer Extension popup loaded');
+import { EinkSettings } from '../types/settings.js';
 
-interface EinkSettings {
-  enabled: boolean;
-  deviceProfile: 'kindle' | 'kobo' | 'remarkable';
-  grayscaleEnabled: boolean;
-  frameRateLimit: number;
-  scrollFlashEnabled: boolean;
-}
+console.log('E-ink Developer Extension popup loaded');
 
 class PopupController {
   private settings: EinkSettings | null = null;
@@ -36,6 +30,8 @@ class PopupController {
           grayscaleEnabled: true,
           frameRateLimit: 5,
           scrollFlashEnabled: true,
+          videoHandlingEnabled: true,
+          videoPlaybackRate: 0.5,
         };
         resolve();
       });

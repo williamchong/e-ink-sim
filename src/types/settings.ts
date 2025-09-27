@@ -6,6 +6,8 @@ export interface EinkSettings {
   grayscaleEnabled: boolean;
   frameRateLimit: number;
   scrollFlashEnabled: boolean;
+  videoHandlingEnabled: boolean;
+  videoPlaybackRate: number;
 }
 
 export interface MessageRequest {
