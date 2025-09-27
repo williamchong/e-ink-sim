@@ -104,7 +104,15 @@
         <div id="animation-stats"></div>
 
         <h2>Scroll Test</h2>
-        <p>Scroll down to test scroll behavior modifications</p>
+        <p>Scroll down to test scroll behavior modifications. With e-ink mode enabled, you should see:</p>
+        <ul>
+            <li>White flash overlay during scrolling (simulates e-ink refresh)</li>
+            <li>Brief black flash after white flash</li>
+            <li>Normal scroll speed maintained (no blocking)</li>
+            <li>Flash effects overlay the content without interrupting scroll flow</li>
+        </ul>
+        <button onclick="testScrollFlash()">Test Scroll Flash Effect</button>
+        <div id="scroll-test-results"></div>
     </div>
 
     <div class="scroll-content">
@@ -291,6 +299,66 @@
             } else {
                 results.innerHTML += `<p style="color: red;">✗ Extension not detected</p>`;
             }
+        }
+
+        function testScrollFlash() {
+            const results = document.getElementById('scroll-test-results');
+            results.innerHTML = '<p>Testing freeze-flash-jump scroll behavior...</p>';
+
+            // Check if scroll flash overlay exists
+            const overlay = document.getElementById('eink-scroll-flash-overlay');
+            if (overlay) {
+                results.innerHTML += '<p style="color: green;">✓ Scroll flash overlay detected</p>';
+                
+                // Test programmatic scroll to trigger flash
+                results.innerHTML += '<p>Testing freeze-flash-jump sequence...</p>';
+                
+                const initialScrollY = window.scrollY;
+                results.innerHTML += `<p>Initial scroll position: ${initialScrollY}px</p>`;
+                
+                // Simulate wheel event to test scroll flash
+                const wheelEvent = new WheelEvent('wheel', {
+                    deltaY: 300, // Larger scroll to see the jump effect
+                    bubbles: true,
+                    cancelable: true
+                });
+                
+                document.dispatchEvent(wheelEvent);
+                
+                setTimeout(() => {
+                    const finalScrollY = window.scrollY;
+                    const scrollDelta = finalScrollY - initialScrollY;
+                    results.innerHTML += `<p>Final scroll position: ${finalScrollY}px (Δ${scrollDelta}px)</p>`;
+                    results.innerHTML += '<p>✓ Freeze-flash-jump test completed. You should have seen:</p>';
+                    results.innerHTML += '<ul><li>Page freeze with white flash</li><li>Instant jump to new position</li><li>Brief black flash</li><li>Fade to reveal new content</li></ul>';
+                }, 1000);
+            } else {
+                results.innerHTML += '<p style="color: orange;">⚠ Scroll flash overlay not found. Make sure e-ink mode is enabled.</p>';
+            }
+
+            // Check if scroll events are being intercepted (should be for e-ink mode)
+            let scrollEventCaught = false;
+            const testScrollHandler = (e) => {
+                if (e.defaultPrevented) {
+                    scrollEventCaught = true;
+                    results.innerHTML += '<p style="color: green;">✓ Scroll events are being intercepted (preventDefault working)</p>';
+                } else {
+                    results.innerHTML += '<p style="color: orange;">⚠ Scroll events may not be intercepted</p>';
+                }
+                document.removeEventListener('wheel', testScrollHandler);
+            };
+
+            document.addEventListener('wheel', testScrollHandler, { passive: false });
+            
+            // Trigger a test wheel event
+            setTimeout(() => {
+                const testWheel = new WheelEvent('wheel', {
+                    deltaY: 50,
+                    bubbles: true,
+                    cancelable: true
+                });
+                document.dispatchEvent(testWheel);
+            }, 100);
         }
 
         // Test animation frame rate on page load

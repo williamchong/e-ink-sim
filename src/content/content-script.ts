@@ -300,6 +300,7 @@ class EinkSimulator {
     const config = {
       frameRateLimit: this.settings.frameRateLimit,
       enabled: this.settings.enabled,
+      scrollFlashEnabled: this.settings.scrollFlashEnabled,
     };
 
     // Send configuration to world script

@@ -82,7 +82,7 @@
 
 ### Phase 1 Nice-to-Have (If time permits):
 
-- [ ] 1.5. Add basic scroll flash effect (3 hours)
+- [x] 1.5. Add basic scroll flash effect (3 hours)
   - Override wheel scroll events to reduce scroll speed
   - Create simple white flash overlay during scrolling
   - **Only implement if ahead of schedule**
@@ -92,7 +92,7 @@
 
 ### Sprint 1: Enhanced Visual Effects (1 week)
 
-- [ ] 2.1. Implement scroll flash effect
+- [x] 2.1. Implement scroll flash effect
   - Create white flash overlay that covers viewport during scrolling
   - Implement e-ink refresh sequence: white flash → scroll → brief black flash → normal
   - Add scroll debouncing to prevent excessive flash effects
