@@ -1,5 +1,7 @@
 # E-ink Developer Extension
 
+![icon](icons/icon-128.png)
+
 A Chrome extension designed specifically for web developers to test and optimize their web applications for e-ink devices. Provides accurate e-ink display simulation, debugging tools, and performance analysis without requiring physical e-ink hardware.
 
 ## Overview
