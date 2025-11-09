@@ -1,4 +1,4 @@
-// Options page script for E-ink Developer Extension
+// Options page script for E-ink Simulator Extension
 // Handles advanced settings and configuration
 
 import { EinkSettings } from '../types/settings.js';

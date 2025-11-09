@@ -1,6 +1,6 @@
-# E-ink Developer Extension Tests
+# E-ink Simulator Extension Tests
 
-This folder contains all testing resources for the E-ink Developer Extension.
+This folder contains all testing resources for the E-ink Simulator Extension.
 
 ## Test Structure
 

@@ -1,4 +1,4 @@
-// World context script for E-ink Developer Extension
+// World context script for E-ink Simulator Extension
 // This script runs in the main world context to override requestAnimationFrame
 // It's injected by the content script to bypass CSP restrictions
 

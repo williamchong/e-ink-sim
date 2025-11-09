@@ -1,9 +1,9 @@
-// Popup script for E-ink Developer Extension
+// Popup script for E-ink Simulator Extension
 // Handles popup UI interactions and settings management
 
 import { EinkSettings } from '../types/settings.js';
 
-console.log('E-ink Developer Extension popup loaded');
+console.log('E-ink Simulator Extension popup loaded');
 
 class PopupController {
   private settings: EinkSettings | null = null;

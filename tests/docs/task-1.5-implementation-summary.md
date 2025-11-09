@@ -1,7 +1,7 @@
 # Task 1.5 Implementation Summary: Basic Scroll Flash Effect
 
 ## Overview
-Successfully implemented basic scroll flash effect functionality for the E-ink Developer Extension. This feature simulates the characteristic flash that occurs on e-ink displays during screen refreshes, specifically when scrolling.
+Successfully implemented basic scroll flash effect functionality for the E-ink Simulator Extension. This feature simulates the characteristic flash that occurs on e-ink displays during screen refreshes, specifically when scrolling.
 
 ## Implementation Details
 

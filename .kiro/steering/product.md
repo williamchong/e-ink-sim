@@ -1,4 +1,4 @@
-# E-ink Developer Extension
+# E-ink Simulator Extension
 
 A Chrome extension that helps web developers test and optimize their applications for e-ink devices by providing accurate e-ink display simulation directly in the browser.
 

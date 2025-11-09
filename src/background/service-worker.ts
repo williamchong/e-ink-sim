@@ -1,4 +1,4 @@
-// Service worker for E-ink Developer Extension
+// Service worker for E-ink Simulator Extension
 // Handles extension lifecycle, settings persistence, and message passing
 
 import {

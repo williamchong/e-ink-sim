@@ -1,4 +1,4 @@
-// Content script for E-ink Developer Extension
+// Content script for E-ink Simulator Extension
 // Handles page injection, CSS modifications, and API overrides
 
 import { EinkSettings, DEVICE_PROFILES } from '../types/settings.js';

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The E-ink Developer Extension is a Chrome extension built specifically for web developers to test and optimize their applications for e-ink devices. The extension provides accurate hardware simulation, comprehensive debugging tools, and performance analysis without requiring physical e-ink hardware.
+The E-ink Simulator Extension is a Chrome extension built specifically for web developers to test and optimize their applications for e-ink devices. The extension provides accurate hardware simulation, comprehensive debugging tools, and performance analysis without requiring physical e-ink hardware.
 
 ## Development Phases
 

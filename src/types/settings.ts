@@ -1,4 +1,4 @@
-// Shared TypeScript interfaces for E-ink Developer Extension
+// Shared TypeScript interfaces for E-ink Simulator Extension
 
 export interface EinkSettings {
   enabled: boolean;

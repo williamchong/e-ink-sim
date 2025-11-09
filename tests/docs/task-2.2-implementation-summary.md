@@ -1,7 +1,7 @@
 # Task 2.2 Implementation Summary: Add Video Element Handling
 
 ## Overview
-Successfully implemented video element handling for the E-ink Developer Extension to simulate e-ink display characteristics on video content.
+Successfully implemented video element handling for the E-ink Simulator Extension to simulate e-ink display characteristics on video content.
 
 ## Implementation Details
 
@@ -128,7 +128,7 @@ interface EinkSettings {
 ## Usage Instructions
 
 ### For Developers
-1. Enable the E-ink Developer Extension
+1. Enable the E-ink Simulator Extension
 2. Navigate to a page with video content
 3. Videos will automatically display with:
    - 0.5x playback speed

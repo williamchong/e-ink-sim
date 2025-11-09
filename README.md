@@ -1,4 +1,4 @@
-# E-ink Developer Extension
+# E-ink Simulator Extension
 
 ![icon](icons/icon-128.png)
 
@@ -6,7 +6,7 @@ A Chrome extension designed specifically for web developers to test and optimize
 
 ## Overview
 
-The E-ink Developer Extension helps web developers create e-ink-friendly web experiences by simulating the unique characteristics of e-ink displays directly in the browser. Whether you're building reading applications, documentation sites, or any web content intended for e-ink devices, this extension provides the tools you need to test and optimize your work.
+The E-ink Simulator Extension helps web developers create e-ink-friendly web experiences by simulating the unique characteristics of e-ink displays directly in the browser. Whether you're building reading applications, documentation sites, or any web content intended for e-ink devices, this extension provides the tools you need to test and optimize your work.
 
 ## Key Features
 
@@ -41,7 +41,7 @@ The E-ink Developer Extension helps web developers create e-ink-friendly web exp
 ### From Chrome Web Store (Coming Soon)
 
 1. Visit the Chrome Web Store
-2. Search for "E-ink Developer Extension"
+2. Search for "E-ink Simulator Extension"
 3. Click "Add to Chrome"
 
 ### Development Installation
